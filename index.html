@@ -122,7 +122,6 @@
       <div class="buttons">
         <button class="btn-yes" onclick="sheSaidYes()">❤️ YES</button>
 
-        <!-- IMPOSSIBLE MODE: extra handlers -->
         <button
           class="btn-no"
           id="noBtn"
@@ -154,18 +153,28 @@
     let targetLeft = 0, targetTop = 0;
     let animating = false;
 
-    // EXTRA DEFENSE: if a click somehow happens, block it.
+    // Block any click no matter what
     noBtn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      // shove it away anyway
-      flee({ clientX: window.innerWidth / 2, clientY: window.innerHeight / 2 });
     }, true);
 
-    // EXTRA DEFENSE: if somehow focused (keyboard), blur and flee.
+    // If it somehow gets focus, blur + flee
     noBtn.addEventListener('focus', () => {
       noBtn.blur();
       flee({ clientX: window.innerWidth / 2, clientY: window.innerHeight / 2 });
+    });
+
+    // Keep it on-screen on resize (prevents "vanish" after viewport changes)
+    window.addEventListener('resize', () => {
+      if (!moved) return;
+      const { padding, safeMaxLeft, safeMaxTop } = getSafeBounds();
+      currentLeft = clamp(currentLeft, padding, safeMaxLeft);
+      currentTop  = clamp(currentTop,  padding, safeMaxTop);
+      targetLeft  = clamp(targetLeft,  padding, safeMaxLeft);
+      targetTop   = clamp(targetTop,   padding, safeMaxTop);
+      noBtn.style.left = currentLeft + 'px';
+      noBtn.style.top  = currentTop  + 'px';
     });
 
     function blockAndFlee(e) {
@@ -189,7 +198,6 @@
         moved = true;
       }
 
-      // Some events may not include clientX/clientY (fallback to center)
       const mx = (typeof e.clientX === 'number') ? e.clientX : window.innerWidth / 2;
       const my = (typeof e.clientY === 'number') ? e.clientY : window.innerHeight / 2;
 
@@ -197,13 +205,21 @@
       animateButton();
     }
 
-    function setTargetAwayFromMouse(mouseX, mouseY) {
+    // ✅ This is the main "no disappear" fix:
+    // safeMaxLeft/safeMaxTop are guaranteed >= padding
+    function getSafeBounds() {
       const padding = 50;
       const btnWidth = noBtn.offsetWidth;
       const btnHeight = noBtn.offsetHeight;
 
-      const maxLeft = window.innerWidth - btnWidth - padding;
-      const maxTop = window.innerHeight - btnHeight - padding;
+      const safeMaxLeft = Math.max(padding, window.innerWidth - btnWidth - padding);
+      const safeMaxTop  = Math.max(padding, window.innerHeight - btnHeight - padding);
+
+      return { padding, safeMaxLeft, safeMaxTop, btnWidth, btnHeight };
+    }
+
+    function setTargetAwayFromMouse(mouseX, mouseY) {
+      const { padding, safeMaxLeft, safeMaxTop, btnWidth, btnHeight } = getSafeBounds();
 
       const btnCenterX = currentLeft + btnWidth / 2;
       const btnCenterY = currentTop + btnHeight / 2;
@@ -215,11 +231,10 @@
       dx /= dist;
       dy /= dist;
 
-      // step size: bigger = harder to catch
       const step = 220;
 
-      targetLeft = clamp(currentLeft + dx * step, padding, maxLeft);
-      targetTop  = clamp(currentTop  + dy * step, padding, maxTop);
+      targetLeft = clamp(currentLeft + dx * step, padding, safeMaxLeft);
+      targetTop  = clamp(currentTop  + dy * step, padding, safeMaxTop);
     }
 
     function animateButton() {
@@ -227,11 +242,15 @@
       animating = true;
 
       function frame() {
-        // higher = more responsive; lower = floatier
         const ease = 0.22;
 
         currentLeft += (targetLeft - currentLeft) * ease;
         currentTop  += (targetTop  - currentTop)  * ease;
+
+        // Final safety clamp (extra insurance)
+        const { padding, safeMaxLeft, safeMaxTop } = getSafeBounds();
+        currentLeft = clamp(currentLeft, padding, safeMaxLeft);
+        currentTop  = clamp(currentTop,  padding, safeMaxTop);
 
         noBtn.style.left = currentLeft + 'px';
         noBtn.style.top  = currentTop  + 'px';
@@ -251,14 +270,12 @@
       return Math.min(Math.max(v, min), max);
     }
 
-    // Success Logic
     function sheSaidYes() {
       document.getElementById('question-box').style.display = 'none';
       document.getElementById('success-msg').style.display = 'block';
       createHearts(50);
     }
 
-    // Background Heart Generator
     function createHearts(count) {
       for (let i = 0; i < count; i++) {
         const heart = document.createElement('div');
