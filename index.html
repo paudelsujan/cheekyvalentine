@@ -8,7 +8,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
 
   <style>
-    /* Force body to fit screen exactly, no scrollbars */
     body {
       margin: 0;
       padding: 0;
@@ -17,10 +16,8 @@
       display: flex;
       justify-content: center;
       align-items: center;
-
       background-color: #ffdde1;
       background-image: linear-gradient(0deg, #ffdde1 0%, #ee9ca7 100%);
-
       font-family: 'Poppins', sans-serif;
       overflow: hidden;
       position: relative;
@@ -43,7 +40,6 @@
       100% { transform: translateY(-130vh) translateX(30px) rotate(8deg); opacity: 0; }
     }
 
-    /* Main Card */
     .container {
       text-align: center;
       background: rgba(255, 255, 255, 0.85);
@@ -70,7 +66,7 @@
       gap: 20px;
       justify-content: center;
       align-items: center;
-      height: 60px; /* reserves space */
+      height: 60px;
       position: relative;
     }
 
@@ -86,7 +82,6 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* YES Button */
     .btn-yes {
       background-color: #ff4757;
       color: white;
@@ -99,23 +94,17 @@
       background-color: #ff6b81;
     }
 
-    /* NO Button */
     .btn-no {
       background-color: #2f3542;
       color: white;
       box-shadow: 0 5px 15px rgba(47, 53, 66, 0.4);
-
       position: relative;
-
-      /* Smoothness comes from JS easing; keep transitions minimal */
-      transition: none;
-
+      transition: none; /* JS handles smoothness */
       z-index: 99999;
       user-select: none;
       touch-action: none;
     }
 
-    /* Success Message */
     .success-message {
       display: none;
       text-align: center;
@@ -135,7 +124,6 @@
       <div class="buttons">
         <button class="btn-yes" onclick="sheSaidYes()">❤️ YES</button>
 
-        <!-- IMPOSSIBLE + STAY-NEAR-CARD mode -->
         <button
           class="btn-no"
           id="noBtn"
@@ -169,12 +157,13 @@
     let targetLeft = 0, targetTop = 0;
     let animating = false;
 
-    // --- IMPOSSIBLE CLICK DEFENSES ---
+    // Block any click no matter what
     noBtn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
     }, true);
 
+    // If it somehow gets focus, blur + flee
     noBtn.addEventListener('focus', () => {
       noBtn.blur();
       flee({ clientX: window.innerWidth / 2, clientY: window.innerHeight / 2 });
@@ -188,29 +177,31 @@
 
     // --- STAY-NEAR-CARD BOUNDS ---
     function getCardBounds() {
-      // The "near card" box size. Increase to give it more room.
-      const margin = 220; // px around the card
+      // Space allowed around the card
+      const baseMargin = 240; // more room so it doesn't feel cramped
+      const padding = 16;     // keep away from screen edges
 
-      const padding = 16; // keep away from screen edges
       const btnWidth = noBtn.offsetWidth;
       const btnHeight = noBtn.offsetHeight;
-
       const rect = card.getBoundingClientRect();
 
-      // Candidate bounds around the card:
+      // Make margin responsive: if viewport is tight, shrink a bit but never to 0
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const margin = Math.max(140, Math.min(baseMargin, Math.floor(Math.min(vw, vh) * 0.35)));
+
       let minLeft = rect.left - margin;
       let maxLeft = rect.right + margin - btnWidth;
-      let minTop = rect.top - margin;
-      let maxTop = rect.bottom + margin - btnHeight;
+      let minTop  = rect.top - margin;
+      let maxTop  = rect.bottom + margin - btnHeight;
 
-      // Clamp bounds to viewport so it never disappears
+      // Clamp to viewport so it never disappears
       minLeft = Math.max(padding, minLeft);
-      minTop = Math.max(padding, minTop);
+      minTop  = Math.max(padding, minTop);
+      maxLeft = Math.min(vw - btnWidth - padding, maxLeft);
+      maxTop  = Math.min(vh - btnHeight - padding, maxTop);
 
-      maxLeft = Math.min(window.innerWidth - btnWidth - padding, maxLeft);
-      maxTop  = Math.min(window.innerHeight - btnHeight - padding, maxTop);
-
-      // If screen is tiny and bounds invert, force a valid range
+      // Ensure valid bounds
       if (maxLeft < minLeft) maxLeft = minLeft;
       if (maxTop < minTop) maxTop = minTop;
 
@@ -237,18 +228,20 @@
       const mx = (typeof e.clientX === 'number') ? e.clientX : window.innerWidth / 2;
       const my = (typeof e.clientY === 'number') ? e.clientY : window.innerHeight / 2;
 
-      setTargetAwayFromMouse(mx, my);
+      setTargetNearCardAwayFromMouse(mx, my);
       startAnimation();
     }
 
-    function setTargetAwayFromMouse(mouseX, mouseY) {
+    // ✅ Anti-stuck logic:
+    // - try away-vector
+    // - if clamped or too small move, try rotated vectors
+    // - if still stuck, pick random point inside bounds far from mouse
+    function setTargetNearCardAwayFromMouse(mouseX, mouseY) {
       const { minLeft, maxLeft, minTop, maxTop, btnWidth, btnHeight } = getCardBounds();
 
-      // Button center
       const btnCenterX = currentLeft + btnWidth / 2;
       const btnCenterY = currentTop + btnHeight / 2;
 
-      // Vector away from mouse
       let dx = btnCenterX - mouseX;
       let dy = btnCenterY - mouseY;
 
@@ -256,11 +249,70 @@
       dx /= mag;
       dy /= mag;
 
-      // How far to flee per update (tune if needed)
-      const step = 180;
+      const step = 200;
+      const minMove = 20; // if target is closer than this, treat as "stuck"
 
-      targetLeft = clamp(currentLeft + dx * step, minLeft, maxLeft);
-      targetTop  = clamp(currentTop  + dy * step, minTop,  maxTop);
+      // helper to compute + detect clamping
+      function propose(nx, ny) {
+        const rawL = currentLeft + nx * step;
+        const rawT = currentTop  + ny * step;
+
+        const clampedL = clamp(rawL, minLeft, maxLeft);
+        const clampedT = clamp(rawT, minTop,  maxTop);
+
+        const movedEnough =
+          Math.hypot(clampedL - currentLeft, clampedT - currentTop) >= minMove;
+
+        const wasClamped = (rawL !== clampedL) || (rawT !== clampedT);
+
+        return { L: clampedL, T: clampedT, movedEnough, wasClamped };
+      }
+
+      // 1) Straight away
+      let best = propose(dx, dy);
+
+      // 2) If it’s clamped into the edge / barely moving, try rotated directions
+      if (!best.movedEnough) {
+        const angles = [35, -35, 70, -70, 110, -110, 145, -145];
+        for (const a of angles) {
+          const rad = (a * Math.PI) / 180;
+          const rx = dx * Math.cos(rad) - dy * Math.sin(rad);
+          const ry = dx * Math.sin(rad) + dy * Math.cos(rad);
+
+          const cand = propose(rx, ry);
+          if (cand.movedEnough) { best = cand; break; }
+        }
+      }
+
+      // 3) If STILL not moving enough, pick a random point inside bounds far from mouse
+      if (!best.movedEnough) {
+        let chosen = null;
+        const tries = 25;
+
+        for (let i = 0; i < tries; i++) {
+          const rL = minLeft + Math.random() * (maxLeft - minLeft);
+          const rT = minTop + Math.random() * (maxTop - minTop);
+
+          const rCX = rL + btnWidth / 2;
+          const rCY = rT + btnHeight / 2;
+
+          // far from mouse + not too close to current spot
+          const farFromMouse = Math.hypot(rCX - mouseX, rCY - mouseY) > 160;
+          const farFromCurrent = Math.hypot(rL - currentLeft, rT - currentTop) > 60;
+
+          if (farFromMouse && farFromCurrent) {
+            chosen = { L: rL, T: rT };
+            break;
+          }
+        }
+
+        if (chosen) {
+          best = { ...chosen, movedEnough: true, wasClamped: false };
+        }
+      }
+
+      targetLeft = best.L;
+      targetTop  = best.T;
     }
 
     function startAnimation() {
@@ -268,7 +320,6 @@
       animating = true;
 
       function animate() {
-        // Smooth easing: higher = snappier, lower = floatier
         const ease = 0.20;
 
         currentLeft += (targetLeft - currentLeft) * ease;
@@ -296,7 +347,6 @@
       return Math.min(Math.max(v, min), max);
     }
 
-    // Keep it on-screen + near card after resize
     window.addEventListener('resize', () => {
       if (!moved) return;
       const { minLeft, maxLeft, minTop, maxTop } = getCardBounds();
@@ -312,12 +362,12 @@
     function sheSaidYes() {
       document.getElementById('question-box').style.display = 'none';
       document.getElementById('success-msg').style.display = 'block';
-      spawnFloaties(60); // extra love explosion
+      spawnFloaties(70);
     }
 
     // --- Love Signs + Balloons ---
-    const LOVE_SIGNS = ['❤️','💖','💕','💗','💘','💞','😍','🥰','😘','✨'];
-    const BALLOONS = ['🎈','🎈','🎈','🎊','🎉']; // weighted toward balloons
+    const LOVE_SIGNS = ['❤️','💖','💕','💗','💘','💞','😍','🥰','😘','✨','💝','🫶'];
+    const BALLOONS = ['🎈','🎈','🎈','🎊','🎉','🎀'];
 
     function spawnFloaties(count) {
       const body = document.body;
@@ -326,29 +376,20 @@
         const el = document.createElement('div');
         el.classList.add('floaty');
 
-        // Mix love + balloons
-        const pool = (Math.random() < 0.65) ? LOVE_SIGNS : BALLOONS;
+        const pool = (Math.random() < 0.68) ? LOVE_SIGNS : BALLOONS;
         el.textContent = pool[Math.floor(Math.random() * pool.length)];
 
         el.style.left = (Math.random() * 100) + 'vw';
-
-        // Variety
         el.style.animationDuration = (Math.random() * 3.5 + 3.5) + 's';
         el.style.fontSize = (Math.random() * 26 + 18) + 'px';
-
-        // Slight horizontal drift randomness via animation-delay + translate
         el.style.animationDelay = (Math.random() * 0.8) + 's';
 
         body.appendChild(el);
-
-        setTimeout(() => el.remove(), 8000);
+        setTimeout(() => el.remove(), 8500);
       }
     }
 
-    // Always sprinkle love + balloons
     setInterval(() => spawnFloaties(4), 550);
-
-    // Small initial sprinkle
     spawnFloaties(18);
   </script>
 </body>
