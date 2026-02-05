@@ -93,6 +93,8 @@
             color: white;
             box-shadow: 0 5px 15px rgba(47, 53, 66, 0.4);
             position: relative; /* Default position */
+            transition: all 0.3s ease; /* Smooth glide */
+            z-index: 100; /* Ensure it floats above everything else */
         }
 
         /* Success Message (Hidden by default) */
@@ -135,18 +137,31 @@
 
     <script>
         const noBtn = document.getElementById('noBtn');
-        const width = window.innerWidth;
-        const height = window.innerHeight;
 
         // Flee Logic
         function flee() {
-            // Calculate random positions within viewport
-            // Subtract button size to ensure it doesn't go off screen
-            const newX = Math.random() * (width - noBtn.offsetWidth - 50); 
-            const newY = Math.random() * (height - noBtn.offsetHeight - 50);
+            // Get current viewport dimensions inside the function 
+            // (so it works even if screen is resized)
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            
+            // Get button dimensions
+            const btnWidth = noBtn.offsetWidth;
+            const btnHeight = noBtn.offsetHeight;
 
-            // Apply absolute position to move it anywhere on body
-            noBtn.style.position = 'absolute';
+            // Calculate safe boundaries (keeping 20px padding from edge)
+            // This ensures the button never goes off screen
+            const maxX = windowWidth - btnWidth - 20;
+            const maxY = windowHeight - btnHeight - 20;
+
+            // Generate random positions within the safe boundaries
+            // Math.max(20, ...) ensures it doesn't get stuck too close to the top/left
+            const newX = Math.max(20, Math.random() * maxX);
+            const newY = Math.max(20, Math.random() * maxY);
+
+            // Apply Fixed position: this breaks it out of the card
+            // and lets it float freely on the whole screen
+            noBtn.style.position = 'fixed';
             noBtn.style.left = newX + 'px';
             noBtn.style.top = newY + 'px';
         }
@@ -156,7 +171,7 @@
             document.getElementById('question-box').style.display = 'none';
             document.getElementById('success-msg').style.display = 'block';
             
-            // Launch confetti effect (simple heart burst)
+            // Launch confetti effect
             createHearts(50);
         }
 
