@@ -175,37 +175,97 @@
       flee(e);
     }
 
-    // --- STAY-NEAR-CARD BOUNDS ---
-    function getCardBounds() {
-      // Space allowed around the card
-      const baseMargin = 240; // more room so it doesn't feel cramped
-      const padding = 16;     // keep away from screen edges
-
+    // --- STAY-NEAR-CARD BOUNDS (allowed ring around card) ---
+    function getCardRingBounds() {
+      const padding = 16;  // screen edge padding
       const btnWidth = noBtn.offsetWidth;
       const btnHeight = noBtn.offsetHeight;
+
       const rect = card.getBoundingClientRect();
 
-      // Make margin responsive: if viewport is tight, shrink a bit but never to 0
+      // Responsive margin around card (how far NO can roam)
       const vw = window.innerWidth;
       const vh = window.innerHeight;
-      const margin = Math.max(140, Math.min(baseMargin, Math.floor(Math.min(vw, vh) * 0.35)));
+      const baseMargin = 260;
+      const margin = Math.max(150, Math.min(baseMargin, Math.floor(Math.min(vw, vh) * 0.38)));
 
+      // Outer rectangle (where the button may exist)
       let minLeft = rect.left - margin;
       let maxLeft = rect.right + margin - btnWidth;
       let minTop  = rect.top - margin;
       let maxTop  = rect.bottom + margin - btnHeight;
 
-      // Clamp to viewport so it never disappears
+      // Clamp outer to viewport
       minLeft = Math.max(padding, minLeft);
       minTop  = Math.max(padding, minTop);
       maxLeft = Math.min(vw - btnWidth - padding, maxLeft);
       maxTop  = Math.min(vh - btnHeight - padding, maxTop);
 
-      // Ensure valid bounds
       if (maxLeft < minLeft) maxLeft = minLeft;
       if (maxTop < minTop) maxTop = minTop;
 
-      return { minLeft, maxLeft, minTop, maxTop, btnWidth, btnHeight };
+      // Inner "no-go" rectangle = card itself (expanded slightly so it never touches)
+      const gap = 18; // space between button and card
+      const inner = {
+        left: rect.left - gap,
+        right: rect.right + gap,
+        top: rect.top - gap,
+        bottom: rect.bottom + gap
+      };
+
+      return { outer: { minLeft, maxLeft, minTop, maxTop }, inner, btnWidth, btnHeight };
+    }
+
+    function rectsOverlap(a, b) {
+      return !(a.right <= b.left || a.left >= b.right || a.bottom <= b.top || a.top >= b.bottom);
+    }
+
+    function clamp(v, min, max) {
+      return Math.min(Math.max(v, min), max);
+    }
+
+    // Project a candidate point into the OUTER bounds AND ensure it does NOT overlap the INNER (card) box.
+    // If it overlaps, snap it to the nearest side of the inner box (still within outer).
+    function enforceRingRules(L, T) {
+      const { outer, inner, btnWidth, btnHeight } = getCardRingBounds();
+
+      // clamp to outer first
+      let left = clamp(L, outer.minLeft, outer.maxLeft);
+      let top  = clamp(T, outer.minTop,  outer.maxTop);
+
+      const btnRect = {
+        left,
+        top,
+        right: left + btnWidth,
+        bottom: top + btnHeight
+      };
+
+      // If it overlaps the card zone, push it to the nearest edge (left/right/top/bottom)
+      if (rectsOverlap(btnRect, inner)) {
+        // distances to move out on each side
+        const pushLeft  = Math.abs((inner.left - btnWidth) - left);     // place button just left of inner
+        const pushRight = Math.abs(inner.right - left);                 // place button just right of inner
+        const pushTop   = Math.abs((inner.top - btnHeight) - top);      // place button just above inner
+        const pushBottom= Math.abs(inner.bottom - top);                 // place button just below inner
+
+        const minPush = Math.min(pushLeft, pushRight, pushTop, pushBottom);
+
+        if (minPush === pushLeft) {
+          left = inner.left - btnWidth;
+        } else if (minPush === pushRight) {
+          left = inner.right;
+        } else if (minPush === pushTop) {
+          top = inner.top - btnHeight;
+        } else {
+          top = inner.bottom;
+        }
+
+        // Clamp again to outer bounds (safety)
+        left = clamp(left, outer.minLeft, outer.maxLeft);
+        top  = clamp(top,  outer.minTop,  outer.maxTop);
+      }
+
+      return { left, top };
     }
 
     function flee(e) {
@@ -228,16 +288,16 @@
       const mx = (typeof e.clientX === 'number') ? e.clientX : window.innerWidth / 2;
       const my = (typeof e.clientY === 'number') ? e.clientY : window.innerHeight / 2;
 
-      setTargetNearCardAwayFromMouse(mx, my);
+      setTargetRingAwayFromMouse(mx, my);
       startAnimation();
     }
 
-    // ✅ Anti-stuck logic:
-    // - try away-vector
-    // - if clamped or too small move, try rotated vectors
-    // - if still stuck, pick random point inside bounds far from mouse
-    function setTargetNearCardAwayFromMouse(mouseX, mouseY) {
-      const { minLeft, maxLeft, minTop, maxTop, btnWidth, btnHeight } = getCardBounds();
+    // Anti-stuck + ring-only logic:
+    // - propose away-vector
+    // - try rotated vectors
+    // - fallback random point in ring (outer minus inner)
+    function setTargetRingAwayFromMouse(mouseX, mouseY) {
+      const { btnWidth, btnHeight } = getCardRingBounds();
 
       const btnCenterX = currentLeft + btnWidth / 2;
       const btnCenterY = currentTop + btnHeight / 2;
@@ -249,31 +309,27 @@
       dx /= mag;
       dy /= mag;
 
-      const step = 200;
-      const minMove = 20; // if target is closer than this, treat as "stuck"
+      const step = 210;
+      const minMove = 22;
 
-      // helper to compute + detect clamping
       function propose(nx, ny) {
         const rawL = currentLeft + nx * step;
         const rawT = currentTop  + ny * step;
 
-        const clampedL = clamp(rawL, minLeft, maxLeft);
-        const clampedT = clamp(rawT, minTop,  maxTop);
+        const enforced = enforceRingRules(rawL, rawT);
 
-        const movedEnough =
-          Math.hypot(clampedL - currentLeft, clampedT - currentTop) >= minMove;
+        const distMove = Math.hypot(enforced.left - currentLeft, enforced.top - currentTop);
+        const movedEnough = distMove >= minMove;
 
-        const wasClamped = (rawL !== clampedL) || (rawT !== clampedT);
-
-        return { L: clampedL, T: clampedT, movedEnough, wasClamped };
+        return { L: enforced.left, T: enforced.top, movedEnough };
       }
 
       // 1) Straight away
       let best = propose(dx, dy);
 
-      // 2) If it’s clamped into the edge / barely moving, try rotated directions
+      // 2) Try rotated vectors if not enough movement
       if (!best.movedEnough) {
-        const angles = [35, -35, 70, -70, 110, -110, 145, -145];
+        const angles = [30, -30, 60, -60, 90, -90, 120, -120, 150, -150];
         for (const a of angles) {
           const rad = (a * Math.PI) / 180;
           const rx = dx * Math.cos(rad) - dy * Math.sin(rad);
@@ -284,21 +340,25 @@
         }
       }
 
-      // 3) If STILL not moving enough, pick a random point inside bounds far from mouse
+      // 3) Random point in ring (outer but not inside inner), far from mouse
       if (!best.movedEnough) {
+        const { outer, inner } = getCardRingBounds();
+
         let chosen = null;
-        const tries = 25;
+        const tries = 40;
 
         for (let i = 0; i < tries; i++) {
-          const rL = minLeft + Math.random() * (maxLeft - minLeft);
-          const rT = minTop + Math.random() * (maxTop - minTop);
+          const rL = outer.minLeft + Math.random() * (outer.maxLeft - outer.minLeft);
+          const rT = outer.minTop  + Math.random() * (outer.maxTop  - outer.minTop);
+
+          const candidateRect = { left: rL, top: rT, right: rL + btnWidth, bottom: rT + btnHeight };
+          if (rectsOverlap(candidateRect, inner)) continue;
 
           const rCX = rL + btnWidth / 2;
           const rCY = rT + btnHeight / 2;
 
-          // far from mouse + not too close to current spot
           const farFromMouse = Math.hypot(rCX - mouseX, rCY - mouseY) > 160;
-          const farFromCurrent = Math.hypot(rL - currentLeft, rT - currentTop) > 60;
+          const farFromCurrent = Math.hypot(rL - currentLeft, rT - currentTop) > 70;
 
           if (farFromMouse && farFromCurrent) {
             chosen = { L: rL, T: rT };
@@ -306,9 +366,7 @@
           }
         }
 
-        if (chosen) {
-          best = { ...chosen, movedEnough: true, wasClamped: false };
-        }
+        if (chosen) best = { ...chosen, movedEnough: true };
       }
 
       targetLeft = best.L;
@@ -325,10 +383,10 @@
         currentLeft += (targetLeft - currentLeft) * ease;
         currentTop  += (targetTop  - currentTop)  * ease;
 
-        // Safety clamp every frame (never disappears)
-        const { minLeft, maxLeft, minTop, maxTop } = getCardBounds();
-        currentLeft = clamp(currentLeft, minLeft, maxLeft);
-        currentTop  = clamp(currentTop,  minTop,  maxTop);
+        // Enforce ring rules every frame so it never overlaps card
+        const enforced = enforceRingRules(currentLeft, currentTop);
+        currentLeft = enforced.left;
+        currentTop  = enforced.top;
 
         noBtn.style.left = currentLeft + 'px';
         noBtn.style.top  = currentTop + 'px';
@@ -343,17 +401,17 @@
       requestAnimationFrame(animate);
     }
 
-    function clamp(v, min, max) {
-      return Math.min(Math.max(v, min), max);
-    }
-
+    // Keep it valid after resize
     window.addEventListener('resize', () => {
       if (!moved) return;
-      const { minLeft, maxLeft, minTop, maxTop } = getCardBounds();
-      currentLeft = clamp(currentLeft, minLeft, maxLeft);
-      currentTop  = clamp(currentTop,  minTop,  maxTop);
-      targetLeft  = clamp(targetLeft,  minLeft, maxLeft);
-      targetTop   = clamp(targetTop,   minTop,  maxTop);
+      const enforcedC = enforceRingRules(currentLeft, currentTop);
+      currentLeft = enforcedC.left;
+      currentTop  = enforcedC.top;
+
+      const enforcedT = enforceRingRules(targetLeft, targetTop);
+      targetLeft = enforcedT.left;
+      targetTop  = enforcedT.top;
+
       noBtn.style.left = currentLeft + 'px';
       noBtn.style.top  = currentTop  + 'px';
     });
@@ -362,11 +420,11 @@
     function sheSaidYes() {
       document.getElementById('question-box').style.display = 'none';
       document.getElementById('success-msg').style.display = 'block';
-      spawnFloaties(70);
+      spawnFloaties(80);
     }
 
     // --- Love Signs + Balloons ---
-    const LOVE_SIGNS = ['❤️','💖','💕','💗','💘','💞','😍','🥰','😘','✨','💝','🫶'];
+    const LOVE_SIGNS = ['❤️','💖','💕','💗','💘','💞','😍','🥰','😘','✨','💝','🫶','🌹'];
     const BALLOONS = ['🎈','🎈','🎈','🎊','🎉','🎀'];
 
     function spawnFloaties(count) {
