@@ -2,13 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>For Milaa ❤️</title>
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
+        /* Force body to fit screen exactly, no scrollbars */
         body {
             margin: 0;
             padding: 0;
+            width: 100vw;
             height: 100vh;
             display: flex;
             justify-content: center;
@@ -17,7 +19,7 @@
             background-color: #ffdde1; 
             background-image: linear-gradient(0deg, #ffdde1 0%, #ee9ca7 100%);
             font-family: 'Poppins', sans-serif;
-            overflow: hidden;
+            overflow: hidden; /* CRITICAL: Prevents scrollbars */
             position: relative;
         }
 
@@ -28,7 +30,8 @@
             color: rgba(255, 255, 255, 0.5);
             font-size: 2rem;
             animation: float 6s linear infinite;
-            z-index: 0;
+            z-index: 1; /* Lowest layer */
+            pointer-events: none; /* Mouse ignores these */
         }
 
         @keyframes float {
@@ -45,6 +48,7 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             z-index: 10;
             max-width: 90%;
+            width: 500px;
             position: relative;
             backdrop-filter: blur(5px);
             border: 2px solid #fff;
@@ -53,7 +57,7 @@
         h1 {
             font-family: 'Pacifico', cursive;
             color: #d63384;
-            font-size: 3rem;
+            font-size: 2.5rem;
             margin-bottom: 2rem;
         }
 
@@ -62,8 +66,7 @@
             gap: 20px;
             justify-content: center;
             align-items: center;
-            /* Added min-height to prevent layout shift when NO leaves */
-            min-height: 60px; 
+            height: 60px; /* Reserves space so layout doesn't collapse */
         }
 
         button {
@@ -74,14 +77,16 @@
             cursor: pointer;
             font-family: 'Poppins', sans-serif;
             font-weight: 600;
+            white-space: nowrap;
         }
 
-        /* Yes Button */
+        /* YES Button */
         .btn-yes {
             background-color: #ff4757;
             color: white;
             box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4);
             transition: transform 0.2s;
+            z-index: 11;
         }
         
         .btn-yes:hover {
@@ -89,21 +94,18 @@
             background-color: #ff6b81;
         }
 
-        /* No Button - UPDATED for Smoothness */
+        /* NO Button - The Moving Target */
         .btn-no {
             background-color: #2f3542;
             color: white;
             box-shadow: 0 5px 15px rgba(47, 53, 66, 0.4);
-            /* Important: position absolute allows us to move it out of flex flow easily */
-            position: absolute; 
-            /* Start it "relative" effectively by not setting top/left initially, 
-               but we handle centering via JS or CSS structure. 
-               For simplicity, we let it sit in flow first, then fix it. */
-            position: static; 
             
-            /* The transition makes the movement smooth */
-            transition: left 0.4s ease, top 0.4s ease;
-            z-index: 9999; /* Ensures it is ALWAYS on top */
+            /* Initial State: In the flow */
+            position: relative;
+            
+            /* Animation Physics */
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            z-index: 99999; /* Highest priority: Never disappears behind anything */
         }
 
         /* Success Message */
@@ -146,42 +148,62 @@
 
     <script>
         const noBtn = document.getElementById('noBtn');
+        let moved = false; // Flag to track if it has moved from original spot
 
         function flee() {
-            // 1. Get current viewport size
-            const windowWidth = window.innerWidth;
-            const windowHeight = window.innerHeight;
-            
-            // 2. Get button size
+            if (!moved) {
+                // FIRST MOVE: This fixes the "Jump" glitch
+                // 1. Get current position
+                const rect = noBtn.getBoundingClientRect();
+                
+                // 2. Switch to fixed positioning at EXACT same coordinates
+                noBtn.style.position = 'fixed';
+                noBtn.style.left = rect.left + 'px';
+                noBtn.style.top = rect.top + 'px';
+                
+                // 3. Mark as moved so we don't reset this again
+                moved = true;
+                
+                // 4. Slight delay before first jump to allow CSS to catch up
+                // preventing the teleport glitch
+                setTimeout(moveButtonRandomly, 50);
+            } else {
+                moveButtonRandomly();
+            }
+        }
+
+        function moveButtonRandomly() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
             const btnWidth = noBtn.offsetWidth;
             const btnHeight = noBtn.offsetHeight;
 
-            // 3. Define the Safe Buffer (so it doesn't touch the edge)
-            const padding = 50; 
+            // PADDING: Keep button 50px away from all edges
+            // This prevents it from partially disappearing
+            const padding = 50;
 
-            // 4. Calculate the Maximum allowable X and Y
-            // Window Width - Button Width - Padding = Maximum Left Position
-            const maxX = windowWidth - btnWidth - padding;
-            const maxY = windowHeight - btnHeight - padding;
+            // Calculate safe area
+            const maxLeft = width - btnWidth - padding;
+            const maxTop = height - btnHeight - padding;
 
-            // 5. Generate Random Coordinates within the safe zone
-            // Math.max ensures it doesn't go too far top/left (negative)
-            const randomX = Math.max(padding, Math.random() * maxX);
-            const randomY = Math.max(padding, Math.random() * maxY);
+            // Generate random coordinates strictly within safe area
+            // Math.max ensures we don't go below padding (top/left edges)
+            const randomLeft = Math.max(padding, Math.floor(Math.random() * maxLeft));
+            const randomTop = Math.max(padding, Math.floor(Math.random() * maxTop));
 
-            // 6. Apply the movement
-            // We switch to 'fixed' so it is relative to the screen, not the card
-            noBtn.style.position = 'fixed'; 
-            noBtn.style.left = randomX + 'px';
-            noBtn.style.top = randomY + 'px';
+            // Apply new coordinates
+            noBtn.style.left = randomLeft + 'px';
+            noBtn.style.top = randomTop + 'px';
         }
 
+        // Success Logic
         function sheSaidYes() {
             document.getElementById('question-box').style.display = 'none';
             document.getElementById('success-msg').style.display = 'block';
             createHearts(50);
         }
 
+        // Background Heart Generator
         function createHearts(count) {
             const body = document.querySelector('body');
             for (let i = 0; i < count; i++) {
