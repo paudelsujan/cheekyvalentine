@@ -1,136 +1,152 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>For Milaa ❤️</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>For Milaa ❤️</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-image: linear-gradient(0deg, #ffdde1 0%, #ee9ca7 100%);
-            font-family: 'Poppins', sans-serif;
-            overflow: hidden;
-            position: relative;
-        }
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-image: linear-gradient(0deg, #ffdde1 0%, #ee9ca7 100%);
+      font-family: 'Poppins', sans-serif;
+      overflow: hidden;
+      position: relative;
+    }
 
-        .bg-heart {
-            position: absolute;
-            bottom: -100px;
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 2rem;
-            animation: float 6s linear infinite;
-            z-index: 1;
-            pointer-events: none;
-        }
+    .bg-heart {
+      position: absolute;
+      bottom: -100px;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 2rem;
+      animation: float 6s linear infinite;
+      z-index: 1;
+      pointer-events: none;
+    }
 
-        @keyframes float {
-            0% { transform: translateY(0); opacity: 1; }
-            100% { transform: translateY(-120vh); opacity: 0; }
-        }
+    @keyframes float {
+      0% { transform: translateY(0); opacity: 1; }
+      100% { transform: translateY(-120vh); opacity: 0; }
+    }
 
-        .container {
-            text-align: center;
-            background: rgba(255, 255, 255, 0.85);
-            padding: 3rem;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            z-index: 10;
-            max-width: 90%;
-            width: 500px;
-            backdrop-filter: blur(5px);
-            border: 2px solid #fff;
-        }
+    .container {
+      text-align: center;
+      background: rgba(255, 255, 255, 0.85);
+      padding: 3rem;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      z-index: 10;
+      max-width: 90%;
+      width: 500px;
+      backdrop-filter: blur(5px);
+      border: 2px solid #fff;
+    }
 
-        h1 {
-            font-family: 'Pacifico', cursive;
-            color: #d63384;
-            font-size: 2.5rem;
-            margin-bottom: 2rem;
-        }
+    h1 {
+      font-family: 'Pacifico', cursive;
+      color: #d63384;
+      font-size: 2.5rem;
+      margin-bottom: 2rem;
+    }
 
-        .buttons {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            align-items: center;
-            height: 60px;
-        }
+    .buttons {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      align-items: center;
+      height: 60px;
+      position: relative;
+    }
 
-        button {
-            padding: 15px 30px;
-            font-size: 1.2rem;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 600;
-            white-space: nowrap;
-        }
+    button {
+      padding: 15px 30px;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 600;
+      white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-        .btn-yes {
-            background-color: #ff4757;
-            color: white;
-            box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4);
-            transition: transform 0.2s;
-        }
+    .btn-yes {
+      background-color: #ff4757;
+      color: white;
+      box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4);
+      transition: transform 0.2s;
+    }
 
-        .btn-yes:hover {
-            transform: scale(1.1);
-            background-color: #ff6b81;
-        }
+    .btn-yes:hover {
+      transform: scale(1.1);
+      background-color: #ff6b81;
+    }
 
-        .btn-no {
-            background-color: #2f3542;
-            color: white;
-            box-shadow: 0 5px 15px rgba(47, 53, 66, 0.4);
-            position: relative;
-            z-index: 99999;
-        }
+    .btn-no {
+      background-color: #2f3542;
+      color: white;
+      box-shadow: 0 5px 15px rgba(47, 53, 66, 0.4);
+      position: relative;
+      z-index: 99999;
+      user-select: none;
+      touch-action: none;
+    }
 
-        .success-message {
-            display: none;
-            text-align: center;
-        }
+    .success-message {
+      display: none;
+      text-align: center;
+    }
 
-        .success-message img {
-            max-width: 200px;
-            border-radius: 10px;
-            margin-top: 20px;
-        }
-    </style>
+    .success-message img {
+      max-width: 200px;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+  </style>
 </head>
 
 <body>
-
-<div class="container">
+  <div class="container">
 
     <div id="question-box">
-        <h1>Hi Milaa!! <br> Will you be my valentine?</h1>
+      <h1>Hi Milaa!! <br> Will you be my valentine?</h1>
 
-        <div class="buttons">
-            <button class="btn-yes" onclick="sheSaidYes()">❤️ YES</button>
-            <button class="btn-no" id="noBtn" onmousemove="flee(event)">💔 NO</button>
-        </div>
+      <div class="buttons">
+        <button class="btn-yes" onclick="sheSaidYes()">❤️ YES</button>
+
+        <!-- IMPOSSIBLE MODE: extra handlers -->
+        <button
+          class="btn-no"
+          id="noBtn"
+          tabindex="-1"
+          aria-label="No (not allowed 😈)"
+          onpointerenter="flee(event)"
+          onpointermove="flee(event)"
+          onmousedown="blockAndFlee(event)"
+          ontouchstart="blockAndFlee(event)"
+        >
+          💔 NO
+        </button>
+      </div>
     </div>
 
     <div class="success-message" id="success-msg">
-        <h1>Yay! I love you! ❤️</h1>
-        <p>See you on date night!</p>
-        <img src="https://media.giphy.com/media/26BRv0ThflsHCqDrG/giphy.gif">
+      <h1>Yay! I love you! ❤️</h1>
+      <p>See you on date night!</p>
+      <img src="https://media.giphy.com/media/26BRv0ThflsHCqDrG/giphy.gif" alt="Love Bear">
     </div>
 
-</div>
+  </div>
 
-<script>
+  <script>
     const noBtn = document.getElementById('noBtn');
 
     let moved = false;
@@ -138,97 +154,125 @@
     let targetLeft = 0, targetTop = 0;
     let animating = false;
 
+    // EXTRA DEFENSE: if a click somehow happens, block it.
+    noBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      // shove it away anyway
+      flee({ clientX: window.innerWidth / 2, clientY: window.innerHeight / 2 });
+    }, true);
+
+    // EXTRA DEFENSE: if somehow focused (keyboard), blur and flee.
+    noBtn.addEventListener('focus', () => {
+      noBtn.blur();
+      flee({ clientX: window.innerWidth / 2, clientY: window.innerHeight / 2 });
+    });
+
+    function blockAndFlee(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      flee(e);
+    }
+
     function flee(e) {
-        if (!moved) {
-            const rect = noBtn.getBoundingClientRect();
-            noBtn.style.position = 'fixed';
-            noBtn.style.left = rect.left + 'px';
-            noBtn.style.top = rect.top + 'px';
+      if (!moved) {
+        const rect = noBtn.getBoundingClientRect();
+        noBtn.style.position = 'fixed';
+        noBtn.style.left = rect.left + 'px';
+        noBtn.style.top = rect.top + 'px';
 
-            currentLeft = rect.left;
-            currentTop = rect.top;
-            targetLeft = currentLeft;
-            targetTop = currentTop;
+        currentLeft = rect.left;
+        currentTop = rect.top;
+        targetLeft = currentLeft;
+        targetTop = currentTop;
 
-            moved = true;
-        }
+        moved = true;
+      }
 
-        setTargetAwayFromMouse(e.clientX, e.clientY);
-        animateButton();
+      // Some events may not include clientX/clientY (fallback to center)
+      const mx = (typeof e.clientX === 'number') ? e.clientX : window.innerWidth / 2;
+      const my = (typeof e.clientY === 'number') ? e.clientY : window.innerHeight / 2;
+
+      setTargetAwayFromMouse(mx, my);
+      animateButton();
     }
 
     function setTargetAwayFromMouse(mouseX, mouseY) {
-        const padding = 50;
-        const btnWidth = noBtn.offsetWidth;
-        const btnHeight = noBtn.offsetHeight;
+      const padding = 50;
+      const btnWidth = noBtn.offsetWidth;
+      const btnHeight = noBtn.offsetHeight;
 
-        const maxLeft = window.innerWidth - btnWidth - padding;
-        const maxTop = window.innerHeight - btnHeight - padding;
+      const maxLeft = window.innerWidth - btnWidth - padding;
+      const maxTop = window.innerHeight - btnHeight - padding;
 
-        const btnCenterX = currentLeft + btnWidth / 2;
-        const btnCenterY = currentTop + btnHeight / 2;
+      const btnCenterX = currentLeft + btnWidth / 2;
+      const btnCenterY = currentTop + btnHeight / 2;
 
-        let dx = btnCenterX - mouseX;
-        let dy = btnCenterY - mouseY;
+      let dx = btnCenterX - mouseX;
+      let dy = btnCenterY - mouseY;
 
-        const dist = Math.hypot(dx, dy) || 1;
-        dx /= dist;
-        dy /= dist;
+      const dist = Math.hypot(dx, dy) || 1;
+      dx /= dist;
+      dy /= dist;
 
-        const step = 180;
+      // step size: bigger = harder to catch
+      const step = 220;
 
-        targetLeft = clamp(currentLeft + dx * step, padding, maxLeft);
-        targetTop = clamp(currentTop + dy * step, padding, maxTop);
+      targetLeft = clamp(currentLeft + dx * step, padding, maxLeft);
+      targetTop  = clamp(currentTop  + dy * step, padding, maxTop);
     }
 
     function animateButton() {
-        if (animating) return;
-        animating = true;
+      if (animating) return;
+      animating = true;
 
-        function frame() {
-            const ease = 0.18;
+      function frame() {
+        // higher = more responsive; lower = floatier
+        const ease = 0.22;
 
-            currentLeft += (targetLeft - currentLeft) * ease;
-            currentTop += (targetTop - currentTop) * ease;
+        currentLeft += (targetLeft - currentLeft) * ease;
+        currentTop  += (targetTop  - currentTop)  * ease;
 
-            noBtn.style.left = currentLeft + 'px';
-            noBtn.style.top = currentTop + 'px';
+        noBtn.style.left = currentLeft + 'px';
+        noBtn.style.top  = currentTop  + 'px';
 
-            if (Math.abs(targetLeft - currentLeft) > 0.5 ||
-                Math.abs(targetTop - currentTop) > 0.5) {
-                requestAnimationFrame(frame);
-            } else {
-                animating = false;
-            }
+        if (Math.abs(targetLeft - currentLeft) > 0.5 ||
+            Math.abs(targetTop  - currentTop)  > 0.5) {
+          requestAnimationFrame(frame);
+        } else {
+          animating = false;
         }
+      }
 
-        requestAnimationFrame(frame);
+      requestAnimationFrame(frame);
     }
 
     function clamp(v, min, max) {
-        return Math.min(Math.max(v, min), max);
+      return Math.min(Math.max(v, min), max);
     }
 
+    // Success Logic
     function sheSaidYes() {
-        document.getElementById('question-box').style.display = 'none';
-        document.getElementById('success-msg').style.display = 'block';
-        createHearts(50);
+      document.getElementById('question-box').style.display = 'none';
+      document.getElementById('success-msg').style.display = 'block';
+      createHearts(50);
     }
 
+    // Background Heart Generator
     function createHearts(count) {
-        for (let i = 0; i < count; i++) {
-            const heart = document.createElement('div');
-            heart.className = 'bg-heart';
-            heart.innerHTML = '❤️';
-            heart.style.left = Math.random() * 100 + 'vw';
-            heart.style.fontSize = (Math.random() * 20 + 20) + 'px';
-            document.body.appendChild(heart);
-            setTimeout(() => heart.remove(), 6000);
-        }
+      for (let i = 0; i < count; i++) {
+        const heart = document.createElement('div');
+        heart.className = 'bg-heart';
+        heart.innerHTML = '❤️';
+        heart.style.left = Math.random() * 100 + 'vw';
+        heart.style.animationDuration = (Math.random() * 3 + 2) + 's';
+        heart.style.fontSize = (Math.random() * 20 + 20) + 'px';
+        document.body.appendChild(heart);
+        setTimeout(() => heart.remove(), 6000);
+      }
     }
 
     setInterval(() => createHearts(3), 500);
-</script>
-
+  </script>
 </body>
 </html>
