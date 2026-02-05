@@ -1,187 +1,355 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>For Milaa ❤️</title>
-    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            background-color: #ffdde1; 
-            background-image: linear-gradient(0deg, #ffdde1 0%, #ee9ca7 100%);
-            font-family: 'Poppins', sans-serif;
-            overflow: hidden;
-            position: relative;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>For Milaa ❤️</title>
 
-        /* Floating Hearts Background */
-        .bg-heart {
-            position: absolute;
-            bottom: -100px;
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 2rem;
-            animation: float 6s linear infinite;
-            z-index: 0;
-        }
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
 
-        @keyframes float {
-            0% { transform: translateY(0); opacity: 1; }
-            100% { transform: translateY(-120vh); opacity: 0; }
-        }
+  <style>
+    /* Force body to fit screen exactly, no scrollbars */
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
 
-        /* Main Card */
-        .container {
-            text-align: center;
-            background: rgba(255, 255, 255, 0.85);
-            padding: 3rem;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            z-index: 10;
-            max-width: 90%;
-            position: relative;
-            backdrop-filter: blur(5px);
-            border: 2px solid #fff;
-        }
+      background-color: #ffdde1;
+      background-image: linear-gradient(0deg, #ffdde1 0%, #ee9ca7 100%);
 
-        h1 {
-            font-family: 'Pacifico', cursive;
-            color: #d63384;
-            font-size: 3rem;
-            margin-bottom: 2rem;
-        }
+      font-family: 'Poppins', sans-serif;
+      overflow: hidden;
+      position: relative;
+    }
 
-        .buttons {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            align-items: center;
-        }
+    /* Floating Love + Balloon Background */
+    .floaty {
+      position: absolute;
+      bottom: -120px;
+      z-index: 1;
+      pointer-events: none;
+      will-change: transform, opacity;
+      opacity: 0.85;
+      animation: floatUp 7s linear infinite;
+      filter: drop-shadow(0 6px 10px rgba(0,0,0,0.08));
+    }
 
-        button {
-            padding: 15px 30px;
-            font-size: 1.2rem;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: transform 0.2s;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 600;
-        }
+    @keyframes floatUp {
+      0%   { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0.95; }
+      100% { transform: translateY(-130vh) translateX(30px) rotate(8deg); opacity: 0; }
+    }
 
-        /* Yes Button - Heart Shapeish */
-        .btn-yes {
-            background-color: #ff4757;
-            color: white;
-            box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4);
-        }
-        
-        .btn-yes:hover {
-            transform: scale(1.1);
-            background-color: #ff6b81;
-        }
+    /* Main Card */
+    .container {
+      text-align: center;
+      background: rgba(255, 255, 255, 0.85);
+      padding: 3rem;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      z-index: 10;
+      max-width: 90%;
+      width: 500px;
+      position: relative;
+      backdrop-filter: blur(5px);
+      border: 2px solid #fff;
+    }
 
-        /* No Button - Broken Heart Vibe */
-        .btn-no {
-            background-color: #2f3542;
-            color: white;
-            box-shadow: 0 5px 15px rgba(47, 53, 66, 0.4);
-            position: relative; /* Default position */
-        }
+    h1 {
+      font-family: 'Pacifico', cursive;
+      color: #d63384;
+      font-size: 2.5rem;
+      margin-bottom: 2rem;
+    }
 
-        /* Success Message (Hidden by default) */
-        .success-message {
-            display: none;
-            text-align: center;
-        }
-        
-        .success-message img {
-            max-width: 200px;
-            border-radius: 10px;
-            margin-top: 20px;
-        }
+    .buttons {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      align-items: center;
+      height: 60px; /* reserves space */
+      position: relative;
+    }
 
-    </style>
+    button {
+      padding: 15px 30px;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 600;
+      white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* YES Button */
+    .btn-yes {
+      background-color: #ff4757;
+      color: white;
+      box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4);
+      transition: transform 0.2s;
+      z-index: 11;
+    }
+    .btn-yes:hover {
+      transform: scale(1.1);
+      background-color: #ff6b81;
+    }
+
+    /* NO Button */
+    .btn-no {
+      background-color: #2f3542;
+      color: white;
+      box-shadow: 0 5px 15px rgba(47, 53, 66, 0.4);
+
+      position: relative;
+
+      /* Smoothness comes from JS easing; keep transitions minimal */
+      transition: none;
+
+      z-index: 99999;
+      user-select: none;
+      touch-action: none;
+    }
+
+    /* Success Message */
+    .success-message {
+      display: none;
+      text-align: center;
+    }
+    .success-message img {
+      max-width: 200px;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+  </style>
 </head>
+
 <body>
+  <div class="container" id="card">
+    <div id="question-box">
+      <h1>Hi Milaa!! <br /> Will you be my valentine?</h1>
+      <div class="buttons">
+        <button class="btn-yes" onclick="sheSaidYes()">❤️ YES</button>
 
-    <div id="bg-hearts"></div>
-
-    <div class="container">
-        <div id="question-box">
-            <h1>Hi Milaa!! <br> Will you be my valentine?</h1>
-            <div class="buttons">
-                <button class="btn-yes" onclick="sheSaidYes()">
-                    ❤️ YES
-                </button>
-                <button class="btn-no" id="noBtn" onmouseover="flee()">
-                    💔 NO
-                </button>
-            </div>
-        </div>
-
-        <div class="success-message" id="success-msg">
-            <h1>Yay! I love you! ❤️</h1>
-            <p>See you on date night!</p>
-            <img src="https://media.giphy.com/media/26BRv0ThflsHCqDrG/giphy.gif" alt="Love Bear">
-        </div>
+        <!-- IMPOSSIBLE + STAY-NEAR-CARD mode -->
+        <button
+          class="btn-no"
+          id="noBtn"
+          tabindex="-1"
+          aria-label="No (not allowed 😈)"
+          onpointerenter="flee(event)"
+          onpointermove="flee(event)"
+          onmousedown="blockAndFlee(event)"
+          ontouchstart="blockAndFlee(event)"
+        >
+          💔 NO
+        </button>
+      </div>
     </div>
 
-    <script>
-        const noBtn = document.getElementById('noBtn');
-        const width = window.innerWidth;
-        const height = window.innerHeight;
+    <div class="success-message" id="success-msg">
+      <h1>Yay! I love you! ❤️</h1>
+      <p>See you on date night!</p>
+      <img src="https://media.giphy.com/media/26BRv0ThflsHCqDrG/giphy.gif" alt="Love Bear" />
+    </div>
+  </div>
 
-        // Flee Logic
-        function flee() {
-            // Calculate random positions within viewport
-            // Subtract button size to ensure it doesn't go off screen
-            const newX = Math.random() * (width - noBtn.offsetWidth - 50); 
-            const newY = Math.random() * (height - noBtn.offsetHeight - 50);
+  <script>
+    const noBtn = document.getElementById('noBtn');
+    const card = document.getElementById('card');
 
-            // Apply absolute position to move it anywhere on body
-            noBtn.style.position = 'absolute';
-            noBtn.style.left = newX + 'px';
-            noBtn.style.top = newY + 'px';
+    let moved = false;
+
+    // Smooth movement state
+    let currentLeft = 0, currentTop = 0;
+    let targetLeft = 0, targetTop = 0;
+    let animating = false;
+
+    // --- IMPOSSIBLE CLICK DEFENSES ---
+    noBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    }, true);
+
+    noBtn.addEventListener('focus', () => {
+      noBtn.blur();
+      flee({ clientX: window.innerWidth / 2, clientY: window.innerHeight / 2 });
+    });
+
+    function blockAndFlee(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      flee(e);
+    }
+
+    // --- STAY-NEAR-CARD BOUNDS ---
+    function getCardBounds() {
+      // The "near card" box size. Increase to give it more room.
+      const margin = 220; // px around the card
+
+      const padding = 16; // keep away from screen edges
+      const btnWidth = noBtn.offsetWidth;
+      const btnHeight = noBtn.offsetHeight;
+
+      const rect = card.getBoundingClientRect();
+
+      // Candidate bounds around the card:
+      let minLeft = rect.left - margin;
+      let maxLeft = rect.right + margin - btnWidth;
+      let minTop = rect.top - margin;
+      let maxTop = rect.bottom + margin - btnHeight;
+
+      // Clamp bounds to viewport so it never disappears
+      minLeft = Math.max(padding, minLeft);
+      minTop = Math.max(padding, minTop);
+
+      maxLeft = Math.min(window.innerWidth - btnWidth - padding, maxLeft);
+      maxTop  = Math.min(window.innerHeight - btnHeight - padding, maxTop);
+
+      // If screen is tiny and bounds invert, force a valid range
+      if (maxLeft < minLeft) maxLeft = minLeft;
+      if (maxTop < minTop) maxTop = minTop;
+
+      return { minLeft, maxLeft, minTop, maxTop, btnWidth, btnHeight };
+    }
+
+    function flee(e) {
+      if (!moved) {
+        const rect = noBtn.getBoundingClientRect();
+
+        // Lock to fixed at exact current position (no jump)
+        noBtn.style.position = 'fixed';
+        noBtn.style.left = rect.left + 'px';
+        noBtn.style.top = rect.top + 'px';
+
+        currentLeft = rect.left;
+        currentTop = rect.top;
+        targetLeft = currentLeft;
+        targetTop = currentTop;
+
+        moved = true;
+      }
+
+      const mx = (typeof e.clientX === 'number') ? e.clientX : window.innerWidth / 2;
+      const my = (typeof e.clientY === 'number') ? e.clientY : window.innerHeight / 2;
+
+      setTargetAwayFromMouse(mx, my);
+      startAnimation();
+    }
+
+    function setTargetAwayFromMouse(mouseX, mouseY) {
+      const { minLeft, maxLeft, minTop, maxTop, btnWidth, btnHeight } = getCardBounds();
+
+      // Button center
+      const btnCenterX = currentLeft + btnWidth / 2;
+      const btnCenterY = currentTop + btnHeight / 2;
+
+      // Vector away from mouse
+      let dx = btnCenterX - mouseX;
+      let dy = btnCenterY - mouseY;
+
+      const mag = Math.hypot(dx, dy) || 1;
+      dx /= mag;
+      dy /= mag;
+
+      // How far to flee per update (tune if needed)
+      const step = 180;
+
+      targetLeft = clamp(currentLeft + dx * step, minLeft, maxLeft);
+      targetTop  = clamp(currentTop  + dy * step, minTop,  maxTop);
+    }
+
+    function startAnimation() {
+      if (animating) return;
+      animating = true;
+
+      function animate() {
+        // Smooth easing: higher = snappier, lower = floatier
+        const ease = 0.20;
+
+        currentLeft += (targetLeft - currentLeft) * ease;
+        currentTop  += (targetTop  - currentTop)  * ease;
+
+        // Safety clamp every frame (never disappears)
+        const { minLeft, maxLeft, minTop, maxTop } = getCardBounds();
+        currentLeft = clamp(currentLeft, minLeft, maxLeft);
+        currentTop  = clamp(currentTop,  minTop,  maxTop);
+
+        noBtn.style.left = currentLeft + 'px';
+        noBtn.style.top  = currentTop + 'px';
+
+        if (Math.abs(targetLeft - currentLeft) > 0.5 || Math.abs(targetTop - currentTop) > 0.5) {
+          requestAnimationFrame(animate);
+        } else {
+          animating = false;
         }
+      }
 
-        // Success Logic
-        function sheSaidYes() {
-            document.getElementById('question-box').style.display = 'none';
-            document.getElementById('success-msg').style.display = 'block';
-            
-            // Launch confetti effect (simple heart burst)
-            createHearts(50);
-        }
+      requestAnimationFrame(animate);
+    }
 
-        // Background Heart Generator
-        function createHearts(count) {
-            const body = document.querySelector('body');
-            for (let i = 0; i < count; i++) {
-                const heart = document.createElement('div');
-                heart.innerHTML = '❤️';
-                heart.classList.add('bg-heart');
-                heart.style.left = Math.random() * 100 + 'vw';
-                heart.style.animationDuration = (Math.random() * 3 + 2) + 's';
-                heart.style.fontSize = (Math.random() * 20 + 20) + 'px';
-                body.appendChild(heart);
-                
-                // Remove heart after animation to keep DOM clean
-                setTimeout(() => {
-                    heart.remove();
-                }, 6000);
-            }
-        }
+    function clamp(v, min, max) {
+      return Math.min(Math.max(v, min), max);
+    }
 
-        // Start background hearts
-        setInterval(() => createHearts(3), 500);
+    // Keep it on-screen + near card after resize
+    window.addEventListener('resize', () => {
+      if (!moved) return;
+      const { minLeft, maxLeft, minTop, maxTop } = getCardBounds();
+      currentLeft = clamp(currentLeft, minLeft, maxLeft);
+      currentTop  = clamp(currentTop,  minTop,  maxTop);
+      targetLeft  = clamp(targetLeft,  minLeft, maxLeft);
+      targetTop   = clamp(targetTop,   minTop,  maxTop);
+      noBtn.style.left = currentLeft + 'px';
+      noBtn.style.top  = currentTop  + 'px';
+    });
 
-    </script>
+    // --- Success Logic ---
+    function sheSaidYes() {
+      document.getElementById('question-box').style.display = 'none';
+      document.getElementById('success-msg').style.display = 'block';
+      spawnFloaties(60); // extra love explosion
+    }
+
+    // --- Love Signs + Balloons ---
+    const LOVE_SIGNS = ['❤️','💖','💕','💗','💘','💞','😍','🥰','😘','✨'];
+    const BALLOONS = ['🎈','🎈','🎈','🎊','🎉']; // weighted toward balloons
+
+    function spawnFloaties(count) {
+      const body = document.body;
+
+      for (let i = 0; i < count; i++) {
+        const el = document.createElement('div');
+        el.classList.add('floaty');
+
+        // Mix love + balloons
+        const pool = (Math.random() < 0.65) ? LOVE_SIGNS : BALLOONS;
+        el.textContent = pool[Math.floor(Math.random() * pool.length)];
+
+        el.style.left = (Math.random() * 100) + 'vw';
+
+        // Variety
+        el.style.animationDuration = (Math.random() * 3.5 + 3.5) + 's';
+        el.style.fontSize = (Math.random() * 26 + 18) + 'px';
+
+        // Slight horizontal drift randomness via animation-delay + translate
+        el.style.animationDelay = (Math.random() * 0.8) + 's';
+
+        body.appendChild(el);
+
+        setTimeout(() => el.remove(), 8000);
+      }
+    }
+
+    // Always sprinkle love + balloons
+    setInterval(() => spawnFloaties(4), 550);
+
+    // Small initial sprinkle
+    spawnFloaties(18);
+  </script>
 </body>
 </html>
