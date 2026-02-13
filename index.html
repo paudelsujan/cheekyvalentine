@@ -99,7 +99,7 @@
       color: white;
       box-shadow: 0 5px 15px rgba(47, 53, 66, 0.4);
       position: relative;
-      transition: none; /* JS handles smoothness */
+      transition: none;
       z-index: 99999;
       user-select: none;
       touch-action: none;
@@ -156,6 +156,7 @@
     let currentLeft = 0, currentTop = 0;
     let targetLeft = 0, targetTop = 0;
     let animating = false;
+    let lastFleeTime = 0;
 
     // Block any click no matter what
     noBtn.addEventListener('click', (e) => {
@@ -269,6 +270,8 @@
     }
 
     function flee(e) {
+      const now = Date.now();
+      
       if (!moved) {
         const rect = noBtn.getBoundingClientRect();
 
@@ -288,7 +291,16 @@
       const mx = (typeof e.clientX === 'number') ? e.clientX : window.innerWidth / 2;
       const my = (typeof e.clientY === 'number') ? e.clientY : window.innerHeight / 2;
 
-      setTargetRingAwayFromMouse(mx, my);
+      // Throttle flee calculations to avoid rapid target changes
+      // Only update target if enough time has passed OR we're close to the target
+      const timeSinceLastFlee = now - lastFleeTime;
+      const distanceToTarget = Math.hypot(targetLeft - currentLeft, targetTop - currentTop);
+      
+      if (timeSinceLastFlee > 150 || distanceToTarget < 30) {
+        setTargetRingAwayFromMouse(mx, my);
+        lastFleeTime = now;
+      }
+      
       startAnimation();
     }
 
@@ -309,7 +321,7 @@
       dx /= mag;
       dy /= mag;
 
-      const step = 210;
+      const step = 180; // Reduced from 210 for smoother movement
       const minMove = 22;
 
       function propose(nx, ny) {
@@ -378,7 +390,7 @@
       animating = true;
 
       function animate() {
-        const ease = 0.20;
+        const ease = 0.18; // Slightly reduced for smoother movement
 
         currentLeft += (targetLeft - currentLeft) * ease;
         currentTop  += (targetTop  - currentTop)  * ease;
